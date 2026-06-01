@@ -2,7 +2,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression, PathJoinSubstitution
 from launch_ros.actions import Node
 
 def generate_launch_description():
@@ -12,14 +12,36 @@ def generate_launch_description():
 
     use_sim_time_param = LaunchConfiguration('use_sim_time')
 
-    map_file = os.path.join(map_share, 'config', 'warehouse_map_sim.yaml')
-    amcl_yaml = os.path.join(loc_share, 'config', 'amcl_config_sim.yaml')
-
-    planner_yaml = os.path.join(nav_dir, 'config', 'planner_sim.yaml')
-    controller_yaml = os.path.join(nav_dir, 'config', 'controller_sim.yaml')
-    bt_navigator_yaml = os.path.join(nav_dir, 'config', 'bt_navigator_sim.yaml')
-    recovery_yaml = os.path.join(nav_dir, 'config', 'recoveries_sim.yaml')
+    map_file = PathJoinSubstitution([
+        map_share, 'config',
+        PythonExpression(["'warehouse_map_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'warehouse_map_real.yaml'"])
+    ])
     
+    amcl_yaml = PathJoinSubstitution([
+        loc_share, 'config',
+        PythonExpression(["'amcl_config_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'amcl_config_real.yaml'"])
+    ])
+
+    planner_yaml = PathJoinSubstitution([
+        nav_dir, 'config',
+        PythonExpression(["'planner_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'planner_real.yaml'"])
+    ])
+
+    controller_yaml = PathJoinSubstitution([
+        nav_dir, 'config',
+        PythonExpression(["'controller_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'controller_real.yaml'"])
+    ])
+
+    bt_navigator_yaml = PathJoinSubstitution([
+        nav_dir, 'config',
+        PythonExpression(["'bt_navigator_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'bt_navigator_real.yaml'"])
+    ])
+
+    recovery_yaml = PathJoinSubstitution([
+        nav_dir, 'config',
+        PythonExpression(["'recoveries_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'recoveries_real.yaml'"])
+    ])
+
     rviz_config_path = os.path.join(nav_dir, 'rviz', 'navigation.rviz')
 
     return LaunchDescription([

@@ -9,10 +9,8 @@ def generate_launch_description():
     loc_share = get_package_share_directory('localization_server')
     map_share = get_package_share_directory('map_server')
     
-    # ⚠️ FIXED: Define the LaunchConfiguration FIRST so everything below can use it
     map_file_param = LaunchConfiguration('map_file')
     
-    # Now this expression evaluates perfectly without throwing a NameError
     nav2_yaml = PythonExpression([
         "'", os.path.join(loc_share, 'config', 'amcl_config_real.yaml'), "' if 'real' in '", map_file_param, "' else '", os.path.join(loc_share, 'config', 'amcl_config_sim.yaml'), "'"
     ])
