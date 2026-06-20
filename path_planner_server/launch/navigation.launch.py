@@ -44,6 +44,8 @@ def generate_launch_description():
 
     rviz_config_path = os.path.join(nav_dir, 'rviz', 'navigation.rviz')
 
+    filters_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'filters.yaml')
+
     return LaunchDescription([
         DeclareLaunchArgument(
             'use_sim_time',
@@ -109,6 +111,24 @@ def generate_launch_description():
         ),
 
         Node(
+            package='nav2_map_server',
+            executable='map_server',
+            name='filter_mask_server',
+            output='screen',
+            emulate_tty=True,
+            parameters=[filters_yaml, {'use_sim_time': use_sim_time_param}]
+        ),
+
+        Node(
+            package='nav2_map_server',
+            executable='costmap_filter_info_server',
+            name='costmap_filter_info_server',
+            output='screen',
+            emulate_tty=True,
+            parameters=[filters_yaml, {'use_sim_time': use_sim_time_param}]
+        ),
+
+        Node(
             package='nav2_lifecycle_manager',
             executable='lifecycle_manager',
             name='lifecycle_manager',
@@ -122,7 +142,9 @@ def generate_launch_description():
                     'planner_server', 
                     'controller_server', 
                     'behavior_server', 
-                    'bt_navigator'
+                    'bt_navigator',
+                    'filter_mask_server',
+                    'costmap_filter_info_server'
                 ]}
             ]
         )
