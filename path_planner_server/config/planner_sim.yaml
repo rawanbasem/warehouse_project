@@ -8,6 +8,7 @@ planner_server:
       use_astar: false
       allow_unknown: true
 
+
 global_costmap:
   global_costmap:
     ros__parameters:
