@@ -44,7 +44,10 @@ def generate_launch_description():
 
     rviz_config_path = os.path.join(nav_dir, 'rviz', 'navigation.rviz')
 
-    filters_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'filters.yaml')
+    filters_yaml = PathJoinSubstitution([
+        nav_dir, 'config',
+        PythonExpression(["'filters.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'filters_real.yaml'"])
+    ])
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -148,4 +151,5 @@ def generate_launch_description():
                 ]}
             ]
         )
+        
     ])
