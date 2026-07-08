@@ -7,20 +7,8 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     nav_dir = get_package_share_directory('path_planner_server')
-    map_share = get_package_share_directory('map_server')
-    loc_share = get_package_share_directory('localization_server')
 
     use_sim_time_param = LaunchConfiguration('use_sim_time')
-
-    map_file = PathJoinSubstitution([
-        map_share, 'config',
-        PythonExpression(["'warehouse_map_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'warehouse_map_real.yaml'"])
-    ])
-    
-    amcl_yaml = PathJoinSubstitution([
-        loc_share, 'config',
-        PythonExpression(["'amcl_config_sim.yaml' if '", use_sim_time_param, "'.lower() == 'true' else 'amcl_config_real.yaml'"])
-    ])
 
     planner_yaml = PathJoinSubstitution([
         nav_dir, 'config',
@@ -54,22 +42,6 @@ def generate_launch_description():
             'use_sim_time',
             default_value='true',
             description='Use simulation clock if true, real hardware clock if false'
-        ),
-
-        Node(
-            package='nav2_map_server',
-            executable='map_server',
-            name='map_server',
-            output='screen',
-            parameters=[{'use_sim_time': use_sim_time_param, 'yaml_filename': map_file}]
-        ),
-
-        Node(
-            package='nav2_amcl',
-            executable='amcl',
-            name='amcl',
-            output='screen',
-            parameters=[amcl_yaml, {'use_sim_time': use_sim_time_param}]
         ),
 
         Node(
@@ -134,14 +106,12 @@ def generate_launch_description():
         Node(
             package='nav2_lifecycle_manager',
             executable='lifecycle_manager',
-            name='lifecycle_manager',
+            name='lifecycle_manager_pathplanning',
             output='screen',
             parameters=[
                 {'autostart': True},
                 {'use_sim_time': use_sim_time_param},
                 {'node_names': [
-                    'map_server', 
-                    'amcl', 
                     'planner_server', 
                     'controller_server', 
                     'behavior_server', 
@@ -151,5 +121,4 @@ def generate_launch_description():
                 ]}
             ]
         )
-        
     ])

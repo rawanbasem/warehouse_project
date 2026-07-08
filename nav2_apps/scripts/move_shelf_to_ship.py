@@ -112,8 +112,6 @@ class WarehouseMissionCoordinator(Node):
         if self.num_legs != 2:
             self.get_logger().error("Legs not found. Aborting.")
             return False
-
-        approach_yaw = self.current_yaw
         
         # Triangulation Math
         a = self.leg_data[0][1]  
@@ -128,7 +126,6 @@ class WarehouseMissionCoordinator(Node):
         y = d * math.cos(alpha + beta)
 
         # Broadcast static frame
-        # --- HARDCODED STATIC FRAME REPLACEMENT ---
         try:
             ts = TransformStamped()
             ts.header.stamp = self.get_clock().now().to_msg()
@@ -186,13 +183,6 @@ class WarehouseMissionCoordinator(Node):
             if rel_x <= 0.04:
                 break
 
-            if abs(rel_y) > 0.05:
-                self.get_logger().warn(
-                    f"Straight-line drive: lateral drift is {rel_y:.3f}m - "
-                    f"not correcting (by design). If this keeps growing, "
-                    f"Phase A's alignment tolerance may need tightening."
-                )
-
             error_distance = math.sqrt(rel_x**2 + rel_y**2)
             cmd.linear.x = min(1.0 * error_distance, 0.15)
             cmd.angular.z = 0.0
@@ -241,9 +231,7 @@ class WarehouseMissionCoordinator(Node):
         param.value.type = ParameterType.PARAMETER_STRING
         param.value.string_value = footprint_string
         req.parameters.append(param)
-        
-        self.get_logger().info(f"Sending dynamic footprint update request: {footprint_string}")
-        
+                
         # Change global costmap configuration
         if self.global_costmap_client.wait_for_service(timeout_sec=2.0):
             self.global_costmap_client.call_async(req)
@@ -315,15 +303,15 @@ def main():
             )
             
             if shipping_success:
-                print("Cart successfully delivered to simulation shipping bay!")
+                print("Cart successfully delivered to shipping position!")
 
                 # PHASE 5: UNLOAD
                 coordinator.set_elevator(action="down")
-                print("Waiting for elevator plate mechanism to lower completely...")
+                print("Uloading the elevator...")
                 time.sleep(4.0)
 
                 # --- LOOP FOR ROBOT REVERSING TO CLEAR OUT THE SHELF ---
-                print("Reversing to clear shelf framework safely...")
+                print("clearing from beneath shelf safely...")
                 
                 rclpy.spin_once(coordinator, timeout_sec=0.1)
                 start_x = coordinator.current_x
@@ -352,7 +340,6 @@ def main():
                 
                 coordinator.stop_robot()
                 time.sleep(1.0)
-                print("Clear of the shelf structure.")
 
                 # Reset footprint back down to the robot's normal (no-shelf) size
                 coordinator.update_nav2_footprint(dimension_x=0.40, dimension_y=0.40)

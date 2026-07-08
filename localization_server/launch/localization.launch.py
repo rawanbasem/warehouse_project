@@ -15,8 +15,6 @@ def generate_launch_description():
         "'", os.path.join(loc_share, 'config', 'amcl_config_real.yaml'), "' if 'real' in '", map_file_param, "' else '", os.path.join(loc_share, 'config', 'amcl_config_sim.yaml'), "'"
     ])
     
-    rviz_config_file = os.path.join(loc_share, 'rviz', 'localization.rviz')
-    
     map_absolute_path = PathJoinSubstitution([
         map_share,
         'config',
@@ -57,17 +55,10 @@ def generate_launch_description():
             executable='lifecycle_manager',
             name='lifecycle_manager_localization',
             output='screen',
-            parameters=[{'use_sim_time': auto_sim_time},
-                        {'autostart': True},
-                        {'node_names': ['map_server', 'amcl']}]
-        ),
-        
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            output='screen',
-            arguments=['-d', rviz_config_file, '--ros-args', '--log-level', 'ERROR'],
-            parameters=[{'use_sim_time': auto_sim_time}]
+            parameters=[
+                {'use_sim_time': auto_sim_time},
+                {'autostart': True},
+                {'node_names': ['map_server', 'amcl']}
+            ]
         ),
     ])
